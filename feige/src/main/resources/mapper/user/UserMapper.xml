@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.feige.user.mapper.UserMapper">
+    <resultMap id="groupUserMap" type="com.feige.user.entity.Group">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <collection property="userList" ofType="com.feige.user.entity.User">
+            <result column="u_id" property="uId"/>
+            <result column="u_name" property="uName"/>
+            <result column="avatar" property="avatar"/>
+            <result column="u_phone" property="uPhone"/>
+            <result column="u_email" property="uEmail"/>
+        </collection>
+    </resultMap>
+    <select id="getGroupUsers" resultMap="groupUserMap">
+        SELECT
+            g.id,
+            g.name,
+            u.u_id,
+            u.u_name,
+            u.u_email,
+            u.u_phone,
+            u.avatar
+        FROM
+            `group` g
+            LEFT JOIN friends f ON f.friend_group_id = g.id
+            LEFT JOIN user u ON u.u_id = f.u_id
+        WHERE
+            g.userid = #{uId}
+    </select>
+    <select id="getUserGroups" parameterType="string" resultType="com.feige.user.entity.Grouptable">
+        SELECT
+            Gon,
+            Gname,
+            Gavatar
+        FROM grouptable
+        WHERE Gon IN (SELECT ug.Gon
+                      FROM user_group ug
+                      WHERE ug.u_id = #{uId})
+    </select>
+    <select id="getChatUserList" parameterType="string" resultType="com.feige.user.entity.User">
+       SELECT
+          u_id,
+          u_name,
+          avatar
+       FROM `user`
+       WHERE u_id IN (SELECT ug.u_id
+                      FROM user_group ug
+                      WHERE ug.Gon = #{Gon} )
+    </select>
+
+</mapper>
